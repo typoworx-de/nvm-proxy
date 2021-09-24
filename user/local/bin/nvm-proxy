@@ -38,6 +38,12 @@ if [ ! -x "${proxy}" ];
 then
   echo "Unknown command ${proxy}!";
   exit 1;
+elif [ "${proxy}" == $0 ];
+then
+  echo "Link-Error for nvm-proxy!";
+  echo "If you're using alias make shure there is a symlink like /usr/local/bin/node-nvm-proxy and your alias points to it!"
+  echo
+  exit 1;
 fi
 
 ${proxy} $@
