@@ -1,0 +1,50 @@
+#!/bin/bash
+
+if [ ! $(which jq) ];
+then
+  echo "$(basename $0) requires jq utility!";
+  echo
+  exit 1;
+fi
+
+if [ -z "${NVM_DIR}" ];
+then
+  echo "$(basename $0) requires nvm utility!";
+  echo "> https://github.com/nvm-sh/nvm#installing-and-updating"
+  echo
+  exit 1;
+fi
+
+if [ -f $(pwd)/package.json ];
+then
+  source ~/.nvm/nvm.sh
+  nodeVersion=$(jq -r '.engines.node | select(.!=null)' $(pwd)/package.json )
+
+  # fetch minor version-number or first present in version-constraint-string
+  nodeVersion=$(echo ${nodeVersion} | grep -Eo '[0-9\.^ ]+' | head -n1)
+
+  if [ ! -z "${nodeVersion}" ] \
+  && [[ ! $(nvm current) = "^v$nodeVersion" ]]
+  then
+    echo "Selecting ${nodeVersion} in package.json engine"
+    nvm use ${nodeVersion}
+  fi
+fi
+
+proxy=$(basename $0);
+proxy=$(which ${proxy/-nvm-proxy/})
+
+if [ ! -x "${proxy}" ];
+then
+  echo "Unknown command ${proxy}!";
+  exit 1;
+elif [ "${proxy}" == $0 ];
+then
+  echo "Link-Error for nvm-proxy!";
+  echo "If you're using alias make shure there is a symlink like /usr/local/bin/node-nvm-proxy and your alias points to it!"
+  echo
+  exit 1;
+fi
+
+${proxy} $@
+exit $?
